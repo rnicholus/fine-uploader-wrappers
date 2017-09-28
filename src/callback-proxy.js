@@ -71,22 +71,26 @@ const executeThenableCallbacks = ({ registeredCallbacks, originalCallbackArgumen
     return Promise.resolve()
 }
 
+
+const getResultToPass = ({ newResult, previousResult }) => {
+    if (newResult !== null && (typeof newResult) === 'object') {
+        return objectAssign({}, previousResult || {}, newResult)
+    }
+    else {
+        return newResult || previousResult
+    }
+}
+
 const executeThenableCallback = ({ registeredCallbacks, originalCallbackArguments, previousResult } ) => {
     return new Promise((resolve, reject) => {
         const callback = registeredCallbacks.pop()
 
         let returnValue = callback.apply(null, originalCallbackArguments)
-        let resultToPass = previousResult
 
         if (returnValue && returnValue.then) {
             returnValue
                 .then(result => {
-                    if (result !== null && (typeof result) === 'object') {
-                        resultToPass = objectAssign({}, resultToPass || {}, result)
-                    }
-                    else {
-                        resultToPass = result || resultToPass
-                    }
+                    const resultToPass = getResultToPass({ newResult: result, previousResult })
 
                     if (registeredCallbacks.length) {
                         executeThenableCallback({ registeredCallbacks, originalCallbackArguments, previousResult: resultToPass })
@@ -102,12 +106,7 @@ const executeThenableCallback = ({ registeredCallbacks, originalCallbackArgument
             reject()
         }
         else {
-            if (returnValue !== null && (typeof returnValue) === 'object') {
-                resultToPass = objectAssign({}, resultToPass || {}, returnValue)
-            }
-            else {
-                resultToPass = returnValue || resultToPass
-            }
+            const resultToPass = getResultToPass({ newResult: returnValue, previousResult })
 
             if (registeredCallbacks.length) {
                 executeThenableCallback({ registeredCallbacks, originalCallbackArguments, previousResult: resultToPass })
