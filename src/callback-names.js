@@ -1,5 +1,3 @@
-import objectAssign from 'object-assign'
-
 export const thenable = [
     'onCancel',
     'onPasteReceived',
@@ -36,6 +34,6 @@ export const traditional = [
     'onValidateBatch'
 ]
 
-export const s3 = objectAssign([], traditional, [
+export const s3 = traditional.concat([
     'onCredentialsExpired'
 ])
